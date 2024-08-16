@@ -35,6 +35,11 @@ And more!
 ## How was it made?
 Most of this code was based off the tutorials, example code, and documentation on [discord.py](https://discordpy.readthedocs.io/en/stable/), which is a really great site. I knew basically nothing about making a Discord bot with slash commands, and then was able to code the bulk of this and test it within 6 hours one random night. Making the shitty art in `media/` took longer than that. I highly recommend discord.py for beginners.
 
+## How do I run this?
+
+0. Install Python 3.
+1. Add a real token in `main.py`, which you can get from your specific bot on [Discord's developer portal.](https://discord.com/developers/applications) It's in the Bot section.
+2. From the root directory, open up a terminal and run `python3 main.py`.
 
 ## How do I submit feature requests?
 

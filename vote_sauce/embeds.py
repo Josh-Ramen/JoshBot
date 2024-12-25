@@ -1,11 +1,12 @@
 from discord import Embed, Colour
+from vote_sauce.functions import pluralizer
 
 # Constants
 _josh_bot_color = Colour(16441474)
 
 # Descriptions
 _tally_success_desc = """For your democratic success, have a :coin: **Sauce Coin.**
-...At least, you would get one if that feature was implemented yet. Sorry! My creator is working on it."""
+You can check your balance with **/balance**, or see the current rankings with **/leaderboard**."""
 
 _tally_no_votes_desc = """Because no votes were submitted, I can't give out any Sauce Coins.
 That's alright! You can try again tomorrow."""
@@ -32,3 +33,10 @@ def audit_success_embed(msg: str):
 
 def audit_no_votes_embed():
     return Embed(title=":chart_with_downwards_trend: **I guess turnout is low?**", color=_josh_bot_color, description=_audit_no_votes_desc)
+
+def balance_success_embed(balance: int):
+    return Embed(
+        title=":bank: **Just checking your account...**",
+        color=_josh_bot_color,
+        description="You have :coin: **{}** Sauce Coin{}.".format(balance, pluralizer(balance))
+    )

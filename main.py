@@ -264,6 +264,7 @@ async def tally_job():
         return
 
     vote_db.purge_votes(vote_database)
+    vote_db.reward_winners(winners, bank_database)
     await message_dest.send(
         embed=vote_embeds.tally_success_embed(vote_functions.get_winner_title(list(winners), guild))
     )
@@ -280,6 +281,14 @@ async def audit(interaction: discord.Interaction):
     
     message = vote_functions.get_audit_desc(candidates, interaction.guild)
     await interaction.response.send_message(embed=vote_embeds.audit_success_embed(message))
+
+@tree.command(
+    name="balance",
+    description="Check how many Sauce Coins you've earned."
+)
+async def balance(interaction: discord.Interaction):
+    balance = vote_db.get_balance(interaction.user.id, bank_database)
+    await interaction.response.send_message(embed=vote_embeds.balance_success_embed(balance))
 
 # Joke commands
 

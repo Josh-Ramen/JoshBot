@@ -1,6 +1,6 @@
 from tinydb import TinyDB, Query
 
-from vote_sauce.objects import SauceVote
+from vote_sauce.objects import SauceVote, BankAccount
 
 def find_vote(voter_uuid: int, database: TinyDB):
     search_res = database.search(Query().voter_uuid == voter_uuid)
@@ -63,3 +63,37 @@ def audit_votes(database: TinyDB):
         votes[vote['vote_uuid']] = votes.get(vote['vote_uuid'], 0) + 1
 
     return votes
+
+def get_bank_account(uuid: int, database: TinyDB):
+    search_res = database.search(Query().uuid == uuid)
+    if (len(search_res) > 0):
+        # User found, return existing bank account
+        match = search_res[0]
+        account = BankAccount(match['uuid'], match['balance'])
+        print("Found existing account: {}".format(account.compressed_desc()))
+        return account
+
+    # No vote found, return a new one
+    new_account = BankAccount(uuid, 0)
+    database.insert(new_account.to_db_entry())
+    return new_account
+
+def update_bank_account(account: BankAccount, database: TinyDB):
+    database.update(
+        { 'balance': account.balance },
+        Query().uuid == account.uuid
+    )
+    print("Successfully updated vote for {}".format(account.uuid))
+
+def give_coin(uuid: int, database: TinyDB):
+    account = get_bank_account(uuid, database)
+    account.add_balance(1)
+    update_bank_account(account, database)
+
+def reward_winners(winners: set[int], database: TinyDB):
+    for winner in winners:
+        give_coin(winner, database)
+
+def get_balance(uuid: int, database: TinyDB):
+    account = get_bank_account(uuid, database)
+    return account.balance

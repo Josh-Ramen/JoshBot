@@ -21,7 +21,7 @@ class SauceVote:
             return "User {} voting {} over {}".format(self.voter_uuid, self.vote_uuid, self.old_vote_uuid)
         return "User {} voting {}".format(self.voter_uuid, self.vote_uuid)
 
-class BankEntry:
+class BankAccount:
     def __init__(self, uuid: int, balance: int):
         self.uuid = uuid
         self.balance = balance

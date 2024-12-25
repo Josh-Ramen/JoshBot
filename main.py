@@ -23,7 +23,7 @@ my_user_id = 321039002268467200
 
 # Real database
 # {uuid: int, unseen_movies: list, seen_movies: list}
-database = TinyDB('movie_wheel_db.json')
+database = TinyDB('movie_wheel/movie_wheel_db.json')
 
 # Ready listener
 @client.event

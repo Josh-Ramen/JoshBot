@@ -54,3 +54,12 @@ def tally_votes(database: TinyDB):
 
 def purge_votes(database: TinyDB):
     database.truncate()
+
+def audit_votes(database: TinyDB):
+    votes = dict[int, int]()
+
+    for vote in database.all():
+        # Increment vote count for candidate
+        votes[vote['vote_uuid']] = votes.get(vote['vote_uuid'], 0) + 1
+
+    return votes

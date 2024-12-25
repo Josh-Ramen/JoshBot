@@ -268,6 +268,19 @@ async def tally_job():
         embed=vote_embeds.tally_success_embed(vote_functions.get_winner_title(list(winners), guild))
     )
 
+@tree.command(
+    name="audit",
+    description="Check how many votes everyone has right now."
+)
+async def audit(interaction: discord.Interaction):
+    candidates = vote_db.audit_votes(vote_database)
+    if (len(candidates) < 1):
+        await interaction.response.send_message(embed=vote_embeds.audit_no_votes_embed, ephemeral=True)
+        return
+    
+    message = vote_functions.get_audit_desc(candidates, interaction.guild)
+    await interaction.response.send_message(embed=vote_embeds.audit_success_embed(message))
+
 # Joke commands
 
 @tree.command(

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from tinydb import TinyDB, Query
 
 from vote_sauce.objects import SauceVote, BankAccount
@@ -97,3 +98,12 @@ def reward_winners(winners: set[int], database: TinyDB):
 def get_balance(uuid: int, database: TinyDB):
     account = get_bank_account(uuid, database)
     return account.balance
+
+def get_leaderboard(database: TinyDB):
+    leaderboard = defaultdict(int)
+
+    for account in database.all():
+        leaderboard[account['uuid']] = account['balance']
+    
+    # Sort and return
+    return sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)

@@ -31,3 +31,25 @@ def get_audit_desc(candidates: dict[int, int], guild: discord.Guild):
     
     text += "\nYou can add a vote or change your vote with **/vote**!"
     return text
+
+def get_ranking(i: int):
+    if i == 0:
+        return ":first_place: "
+    elif i == 1:
+        return ":second_place: "
+    elif i == 2:
+        return ":third_place: "
+    
+    return "{}. ".format(i + 1)
+
+def get_leaderboard_desc(leaderboard: list[tuple[int, int]], guild: discord.Guild):
+    text = ""
+    for i in range(len(leaderboard)):
+        tuple = leaderboard[i]
+        text += get_ranking(i)
+        text += "**{}** with :coin: **{} Sauce Coins**".format(guild.get_member(tuple[0]).display_name, tuple[1])
+
+        if (i != len(leaderboard) - 1):
+            text += "\n"
+    
+    return text

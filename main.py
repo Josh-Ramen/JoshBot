@@ -290,6 +290,19 @@ async def balance(interaction: discord.Interaction):
     balance = vote_db.get_balance(interaction.user.id, bank_database)
     await interaction.response.send_message(embed=vote_embeds.balance_success_embed(balance))
 
+@tree.command(
+    name="leaderboard",
+    description="See who's earned the most coins!"
+)
+async def leaderboard(interaction: discord.Interaction):
+    leaderboard = vote_db.get_leaderboard(bank_database)
+    if (len(leaderboard) == 0):
+        await interaction.response.send_message(embed=vote_embeds.leaderboard_empty_embed())
+        return
+    
+    message = vote_functions.get_leaderboard_desc(leaderboard, interaction.guild)
+    await interaction.response.send_message(embed=vote_embeds.leaderboard_success_embed(message))
+
 # Joke commands
 
 @tree.command(

@@ -14,6 +14,8 @@ That's alright! You can try again tomorrow."""
 _audit_no_votes_desc = """There are no votes to audit.
 Try voting with **/vote**."""
 
+_leaderboard_empty_desc = """None of you have earned any :coin: **Sauce Coins**, so there's no leaderboard to display."""
+
 # Embeds
 
 def vote_success_embed(msg: str):
@@ -40,3 +42,9 @@ def balance_success_embed(balance: int):
         color=_josh_bot_color,
         description="You have :coin: **{}** Sauce Coin{}.".format(balance, pluralizer(balance))
     )
+
+def leaderboard_success_embed(msg: str):
+    return Embed(title=":chart: Here's how it stands!", color=_josh_bot_color, description=msg)
+
+def leaderboard_empty_embed():
+    return Embed(title=":money_with_wings: **It appears you're all broke.**", color=_josh_bot_color, description=_leaderboard_empty_desc)

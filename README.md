@@ -10,13 +10,17 @@ JoshBot is a Discord bot built in Python. It functions exclusively through slash
 
 v1.0.0 - Currently serves as The Movie Wheel™️. It also has a few joke commands specific to the people in my friends' Discord server.
 
+v1.1.0 - Added SauceVote functionality, and also refactored some small things, mostly to do with help commands. 
+
 ## What is The Movie Wheel ™️ ?
 
 Two of my friends had a recurring movie night, where they would put a big list of movies they both wanted to watch on a wheel and then spin it to randomly determine what they would watch that night. All three Kizumonogatari movies were on that wheel. It was truly the best.
 
 Anyway, they asked me if I could make something like that but for the entire friend group. This is that. Users can interact with it using the following commands...
 
-> /help - Lists out all helpful commands.
+> /helpwheel - Lists out all relevant commands.
+>
+> /explainwheel - Explains how the wheel works.
 >
 > /submit [movie] - Add a movie to the wheel. You get up to two entries.
 >
@@ -30,7 +34,27 @@ Anyway, they asked me if I could make something like that but for the entire fri
 >
 > /something_cool - Marcus asked for this.
 
-And more!
+And some admin commands. Probably more too?
+
+## What is Sauce Vote?
+
+At one point like three years ago, someone used the phrase "top funny" to me and it immediately became embedded into my vocabulary. I randomly had the idea to have people "vote on the top funny of the night", and made this to encapsulate that.
+
+Anyone in the server can vote for a user, and at the end of the night (set to 5 AM UTC --> 12 AM EST) the user(s) with the highest number of votes will be awarded a highly valuable* **Sauce Coin.**
+
+> /helpvote - Lists out all relevant commands.
+>
+> /explainvote - Explains how voting works.
+>
+> /vote [user] - Vote for a given user.
+>
+> /audit - Shows current vote tallies.
+>
+> /leaderboard - Shows everyone's Sauce Coin balance from greatest to least.
+>
+> /balance - Shows how many Sauce Coins you have. 
+
+*Sauce Coins do not currently do anything.  
 
 ## How was it made?
 Most of this code was based off the tutorials, example code, and documentation on [discord.py](https://discordpy.readthedocs.io/en/stable/), which is a really great site. I knew basically nothing about making a Discord bot with slash commands, and then was able to code the bulk of this and test it within 6 hours one random night. Making the shitty art in `media/` took longer than that. I highly recommend discord.py for beginners.

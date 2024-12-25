@@ -1,17 +1,9 @@
-from discord import Embed, Colour
-
-# Constants
-_josh_bot_color = Colour(16441474)
+from discord import Embed
+from common.embeds import _josh_bot_color
 
 # Description strings
 
-_wheel_help_desc = '''My current purpose is to serve as The Movie Wheel :tm:.
-
-__General commands:__
-:question: **/help** - It'll display... um, this message. You just used it. Are you okay?
-:clipboard: **/changelog** - I can explain what's changed since my last version!
-:speaking_head: **/explainyourself** - I'll tell you how this movie wheel thing works.
-:secret: **/something_cool** - It does something cool.
+_wheel_help_desc = '''Here's what I can do as The Movie Wheel :tm: !
 
 __Movie Wheel commands:__
 :cinema: **/submit [movie]** - Submit a movie to the wheel.
@@ -20,16 +12,9 @@ __Movie Wheel commands:__
 :film_frames: **/wheel** - Anonymously prints out all movies left on the wheel.
 :clapper: **/spin** - Spins the wheel to randomly select a movie.
 
-__Vote commands:__
-:ballot_box: **/vote [user]** - Vote for a user in this server, or change your vote.
-:mag: **/audit** - Check how many votes are in right now.
-:bank: **/balance** - Check how many :coin: **Sauce Coins** you've earned.
-:bar_chart: **/leaderboard** - See who's earned the most :coin: **Sauce Coins** so far.
-
 __Dangerous commands:__
 :rewind: **/unspin** - Resets the "watched" status of all movies on the wheel.
 :bomb: **/reset** - Removes all entries on the wheel.
-:octagonal_sign: **/tally** - Stop the count immediately and reward whoever has the most votes.
 '''
 
 _wheel_explain_desc='''Let me explain! We'll go step-by-step.
@@ -50,24 +35,11 @@ Just keep spinning until you run out of movies. I'll tell you when the wheel is 
 If you actually make it to this point and want to do more, then you can **/reset** to do movies again!
 Note: my creator is skeptical that you will reach this point.'''
 
-_changelog_desc='''**General changes**
--Added **/changelog**, which you're looking at right now! Isn't it helpful?
-
-**Movie Wheel changes**
--The Movie Wheel :tm: has been fully implemented.
--(This was already the case, but we only just started tracking the version.)
-
-**Joke changes**
--I added **something cool** for most active members of Golden Sauce. Try it out!
-'''
-
 # Embeds
 
 wheel_help_embed = Embed(title=":ramen: **I'm JoshBot!** :ramen:", color=_josh_bot_color, description=_wheel_help_desc)
 
 wheel_explain_embed = Embed(title=":film_frames: **How does this work?** :film_frames:", color=_josh_bot_color, description=_wheel_explain_desc)
-
-changelog_embed = Embed(title=":clipboard: **JoshBot version 1.00!** :clipboard:", color=_josh_bot_color, description=_changelog_desc)
 
 def wheel_submit_error_embed(error_msg: str):
     return Embed(title=":x: **Sorry, something went wrong...**", color=_josh_bot_color, description=error_msg)

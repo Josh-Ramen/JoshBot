@@ -1,10 +1,36 @@
 from discord import Embed, Colour
+
+from common.embeds import _josh_bot_color
 from vote_sauce.functions import pluralizer
 
-# Constants
-_josh_bot_color = Colour(16441474)
-
 # Descriptions
+
+_vote_help_desc = """Here's what I can do for voting!
+
+__Vote commands:__
+:ballot_box: **/vote [user]** - Vote for a user in this server, or change your vote.
+:mag: **/audit** - Check how many votes are in right now.
+:bank: **/balance** - Check how many :coin: **Sauce Coins** you've earned.
+:bar_chart: **/leaderboard** - See who's earned the most :coin: **Sauce Coins** so far.
+
+__Dangerous commands:__
+:octagonal_sign: **/tally** - Stop the count immediately and reward whoever has the most votes.
+"""
+
+_vote_explain_desc = """It's a lot more simple than the wheel, I promise!
+
+**1) Vote**
+Use **/vote [user]** to submit a vote for someone. I think your vote should be for whoever did the top funny. 
+If you want to change your vote at any time, just do it again with a different user! That'll change your vote.
+
+**2) Wait**
+The tally comes in at around 12 PM EST. At that point, whoever has the most votes will earn :coin: **1 Sauce Coin.**
+
+...That's it! You can't do anything with sauce coins or anything. We're not making a cryptocurrency, that'd be stupid, right?
+
+You can check who has the most :coin: **Sauce Coins** with **/leaderboard** and check your own balance with **/balance.** 
+"""
+
 _tally_success_desc = """For your democratic success, have a :coin: **Sauce Coin.**
 You can check your balance with **/balance**, or see the current rankings with **/leaderboard**."""
 
@@ -17,6 +43,10 @@ Try voting with **/vote**."""
 _leaderboard_empty_desc = """None of you have earned any :coin: **Sauce Coins**, so there's no leaderboard to display."""
 
 # Embeds
+
+vote_help_embed = Embed(title=":ramen: **I'm JoshBot!** :ramen:", color=_josh_bot_color, description=_vote_help_desc)
+
+vote_explain_embed = Embed(title=":ballot_box: **How does this work?** :ballot_box:", color=_josh_bot_color, description=_vote_explain_desc)
 
 def vote_success_embed(msg: str):
     return Embed(title=":ballot_box: **Democracy is working!**", color=_josh_bot_color, description=msg)

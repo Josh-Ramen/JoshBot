@@ -5,6 +5,7 @@ from discord.ext import tasks
 import os.path
 from tinydb import TinyDB
 
+import common.embeds as common_embeds
 import movie_wheel.database as wheel_db
 import movie_wheel.embeds as wheel_embeds
 import vote_sauce.database as vote_db
@@ -42,7 +43,6 @@ async def on_ready():
     # Start the loop
     if not tally_job.is_running():
         tally_job.start()
-    
     print("JoshBot is now online!")
 
 # General commands
@@ -51,24 +51,31 @@ async def on_ready():
     name="help",
     description="Do you need something?"
 )
-async def help(interaction):
-    await interaction.response.send_message(embed=wheel_embeds.wheel_help_embed, ephemeral=True)
-
-@tree.command(
-    name="explainyourself",
-    description="It's not that complicated!"
-)
-async def explain(interaction):
-    await interaction.response.send_message(embed=wheel_embeds.wheel_explain_embed, ephemeral=True)
+async def help(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=common_embeds.help_embed, ephemeral=True)
 
 @tree.command(
     name="changelog",
     description="Here's what's new!"
 )
-async def explain(interaction):
-    await interaction.response.send_message(embed=wheel_embeds.changelog_embed)
+async def changelog(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=common_embeds.changelog_embed)
 
 # Wheel commands
+
+@tree.command(
+    name="helpwheel",
+    description="I'll list out the wheel commands."
+)
+async def helpwheel(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=wheel_embeds.wheel_help_embed, ephemeral=True)
+
+@tree.command(
+    name="explainwheel",
+    description="I can explain how the wheel works!"
+)
+async def explainwheel(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=wheel_embeds.wheel_explain_embed, ephemeral=True)
 
 @tree.command(
     name="submit",
@@ -226,6 +233,20 @@ async def spin(interaction: discord.Interaction):
     await interaction.response.send_message(embed=wheel_embeds.wheel_spin_success_embed(movie_to_watch))
 
 # Vote commands
+
+@tree.command(
+    name="helpvote",
+    description="I'll list out the vote commands."
+)
+async def helpvote(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=vote_embeds.vote_help_embed, ephemeral=True)
+
+@tree.command(
+    name="explainvote",
+    description="I can explain how voting works!"
+)
+async def explainvote(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=vote_embeds.vote_explain_embed, ephemeral=True)
 
 @tree.command(
     name="vote",

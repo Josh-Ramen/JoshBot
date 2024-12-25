@@ -256,15 +256,16 @@ async def vote(interaction: discord.Interaction, user: discord.Member):
         )
 
 async def tally_job():
-    message_dest = client.guilds[real_server_id].system_channel
+    guild = client.get_guild(test_server_id)
+    message_dest = guild.system_channel
     winners = vote_db.tally_votes(vote_database)
     if (len(winners) < 1):
-        await message_dest.send_message(embed=vote_embeds.tally_no_votes_embed())
+        await message_dest.send(embed=vote_embeds.tally_no_votes_embed())
         return
 
     vote_db.purge_votes(vote_database)
-    await message_dest.send_message(
-        embed=vote_embeds.tally_success_embed(vote_functions.get_winner_title(list(winners), client.guilds[real_server_id]))
+    await message_dest.send(
+        embed=vote_embeds.tally_success_embed(vote_functions.get_winner_title(list(winners), guild))
     )
 
 # Joke commands
@@ -322,7 +323,7 @@ async def tally(interaction: discord.Interaction):
         await interaction.response.send_message(file=discord.File(fp='media/no.mp4'))
         return
     
-    tally_job()
+    await tally_job()
 
 
 # Load secret and run

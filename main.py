@@ -256,5 +256,7 @@ async def reset(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embeds.wheel_reset_success_embed)
 
 
-
-client.run('token!')
+# Load secret and run
+with open('secret.txt', 'r') as file:
+    secret = file.read().rstrip()
+    client.run(secret)

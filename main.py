@@ -2,9 +2,12 @@ import discord
 from discord import app_commands
 import os.path
 from tinydb import TinyDB
-import movie_wheel.embeds as wheel_embeds
-import movie_wheel.database as wheel_db
 
+import movie_wheel.database as wheel_db
+import movie_wheel.embeds as wheel_embeds
+import vote_sauce.database as vote_db
+import vote_sauce.embeds as vote_embeds
+import vote_sauce.functions as vote_functions
 
 # Boiler plate setup
 intents = discord.Intents.default()
@@ -21,9 +24,13 @@ full_server_list = [discord.Object(id=test_server_id), discord.Object(id=real_se
 # My consts
 my_user_id = 321039002268467200
 
-# Real database
+# Wheel database
 # {uuid: int, unseen_movies: list, seen_movies: list}
 wheel_database = TinyDB('movie_wheel/movie_wheel_db.json')
+
+# Vote databases
+vote_database = TinyDB('vote_sauce/votes_db.json')
+leaderboard_database = TinyDB('vote_sauce/leaderboard_db.json')
 
 # Ready listener
 @client.event
@@ -211,6 +218,55 @@ async def spin(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=wheel_embeds.wheel_spin_success_embed(movie_to_watch))
 
+# Vote commands
+
+@tree.command(
+    name="vote",
+    description="Vote for someone to be tonight's winner!"
+)
+@app_commands.describe(user="The @ of the user you want to vote for.")
+async def vote(interaction: discord.Interaction, user: discord.Member):
+    existing_vote = vote_db.find_vote(interaction.user.id, vote_database)
+
+    update_result = vote_db.update_vote(existing_vote, user.id)
+    if (update_result <= 0):
+        # Vote didn't change
+        vote_user = interaction.guild.get_member(user.id)
+        await interaction.response.send_message(
+            embed=vote_embeds.vote_error_embed("You already voted for {} , so there's nothing for me to do...".format(vote_user.mention)),
+            ephemeral=True
+        )
+        return
+    
+    # Vote was successfully changed
+    vote_db.send_vote(existing_vote, vote_database)
+    # Spite message branch
+    if (existing_vote.old_vote_uuid != -1):
+        old_vote_user = interaction.guild.get_member(existing_vote.old_vote_uuid)
+        await interaction.response.send_message(
+            embed=vote_embeds.vote_success_embed(
+                "{} voted for {} !\n...And thus removed a vote for {} !".format(interaction.user.mention, user.mention, old_vote_user.mention)
+            )
+        )
+    else:
+        await interaction.response.send_message(
+            embed=vote_embeds.vote_success_embed(
+                "{} voted for {} !".format(interaction.user.mention, user.mention)
+            )
+        )
+
+async def tally_job():
+    message_dest = client.guilds[real_server_id].system_channel
+    winners = vote_db.tally_votes(vote_database)
+    if (len(winners) < 1):
+        await message_dest.send_message(embed=vote_embeds.tally_no_votes_embed())
+        return
+
+    vote_db.purge_votes(vote_database)
+    await message_dest.send_message(
+        embed=vote_embeds.tally_success_embed(vote_functions.get_winner_title(list(winners), client.guilds[real_server_id]))
+    )
+
 # Joke commands
 
 @tree.command(
@@ -254,6 +310,19 @@ async def reset(interaction: discord.Interaction):
     else:
         wheel_database.truncate()
         await interaction.response.send_message(embed=wheel_embeds.wheel_reset_success_embed)
+
+@tree.command(
+    name="tally",
+    description="Bypass the wait time and stop the count now!"
+)
+async def tally(interaction: discord.Interaction):
+    # Check sender permissions
+    is_josh = interaction.user.id == my_user_id
+    if (not is_josh):
+        await interaction.response.send_message(file=discord.File(fp='media/no.mp4'))
+        return
+    
+    tally_job()
 
 
 # Load secret and run

@@ -1,5 +1,29 @@
 import discord
 
+from common.constants import bot_user_id
+from vote_sauce.objects import SauceVote
+
+def get_vote_desc(vote: SauceVote, new_vote: discord.Member, interaction: discord.Interaction):
+    text = "{} voted for {} !"
+    guild = interaction.guild
+    
+    # Spite message branch
+    if (vote.old_vote_uuid != -1):
+        old_vote_user = guild.get_member(vote.old_vote_uuid)
+        text += "\n...And thus removed a vote for {} !"
+        # Betrayal
+        if (old_vote_user.id == bot_user_id):
+            text += "\nA-aha, I guess you changed your mind... That's okay."
+        text = text.format(interaction.user.mention, new_vote.mention, old_vote_user.mention)
+    else:
+        text = text.format(interaction.user.mention, new_vote.mention)
+    
+    # Flattery message branch
+    if (new_vote.id == bot_user_id):
+        text += "\n\n...Wait, you voted for me? Awww... thank you."
+    
+    return text
+
 def get_winner_title(winners: list[int], guild: discord.Guild):
     text = ":moneybag: "
 

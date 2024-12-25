@@ -268,19 +268,10 @@ async def vote(interaction: discord.Interaction, user: discord.Member):
     
     # Vote was successfully changed
     vote_db.send_vote(existing_vote, vote_database)
-    # Spite message branch
-    if (existing_vote.old_vote_uuid != -1):
-        old_vote_user = interaction.guild.get_member(existing_vote.old_vote_uuid)
-        await interaction.response.send_message(
-            embed=vote_embeds.vote_success_embed(
-                "{} voted for {} !\n...And thus removed a vote for {} !".format(interaction.user.mention, user.mention, old_vote_user.mention)
-            )
-        )
-    else:
-        await interaction.response.send_message(
-            embed=vote_embeds.vote_success_embed(
-                "{} voted for {} !".format(interaction.user.mention, user.mention)
-            )
+    
+    vote_desc = vote_functions.get_vote_desc(existing_vote, user, interaction)
+    await interaction.response.send_message(
+            embed=vote_embeds.vote_success_embed(vote_desc)
         )
 
 @tasks.loop(time=datetime.time(hour=5, minute=0, second=0))

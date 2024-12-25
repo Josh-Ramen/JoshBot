@@ -20,9 +20,16 @@ __Movie Wheel commands:__
 :film_frames: **/wheel** - Anonymously prints out all movies left on the wheel.
 :clapper: **/spin** - Spins the wheel to randomly select a movie.
 
+__Vote commands:__
+:ballot_box: **/vote [user]** - Vote for a user in this server, or change your vote.
+:mag: **/audit** - Check how many votes are in right now.
+:bank: **/balance** - Check how many :coin: **Sauce Coins** you've earned.
+:bar_chart: **/leaderboard** - See who's earned the most :coin: **Sauce Coins** so far.
+
 __Dangerous commands:__
 :rewind: **/unspin** - Resets the "watched" status of all movies on the wheel.
 :bomb: **/reset** - Removes all entries on the wheel.
+:octagonal_sign: **/tally** - Stop the count immediately and reward whoever has the most votes.
 '''
 
 _wheel_explain_desc='''Let me explain! We'll go step-by-step.

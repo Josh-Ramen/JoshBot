@@ -1,5 +1,7 @@
+import datetime
 import discord
 from discord import app_commands
+from discord.ext import tasks
 import os.path
 from tinydb import TinyDB
 
@@ -36,6 +38,11 @@ bank_database = TinyDB('vote_sauce/bank_db.json')
 @client.event
 async def on_ready():
     await tree.sync()
+
+    # Start the loop
+    if not tally_job.is_running():
+        tally_job.start()
+    
     print("JoshBot is now online!")
 
 # General commands
@@ -255,8 +262,9 @@ async def vote(interaction: discord.Interaction, user: discord.Member):
             )
         )
 
+@tasks.loop(time=datetime.time(hour=5, minute=0, second=0))
 async def tally_job():
-    guild = client.get_guild(test_server_id)
+    guild = client.get_guild(real_server_id)
     message_dest = guild.system_channel
     winners = vote_db.tally_votes(vote_database)
     if (len(winners) < 1):
@@ -366,3 +374,4 @@ async def tally(interaction: discord.Interaction):
 with open('secret.txt', 'r') as file:
     secret = file.read().rstrip()
     client.run(secret)
+    print("JoshBot ")

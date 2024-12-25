@@ -30,7 +30,7 @@ wheel_database = TinyDB('movie_wheel/movie_wheel_db.json')
 
 # Vote databases
 vote_database = TinyDB('vote_sauce/votes_db.json')
-leaderboard_database = TinyDB('vote_sauce/leaderboard_db.json')
+bank_database = TinyDB('vote_sauce/bank_db.json')
 
 # Ready listener
 @client.event
@@ -275,7 +275,7 @@ async def tally_job():
 async def audit(interaction: discord.Interaction):
     candidates = vote_db.audit_votes(vote_database)
     if (len(candidates) < 1):
-        await interaction.response.send_message(embed=vote_embeds.audit_no_votes_embed, ephemeral=True)
+        await interaction.response.send_message(embed=vote_embeds.audit_no_votes_embed(), ephemeral=True)
         return
     
     message = vote_functions.get_audit_desc(candidates, interaction.guild)
@@ -336,6 +336,7 @@ async def tally(interaction: discord.Interaction):
         await interaction.response.send_message(file=discord.File(fp='media/no.mp4'))
         return
     
+    await interaction.response.send_message("Working on it, boss!", ephemeral=True)
     await tally_job()
 
 

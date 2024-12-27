@@ -1,9 +1,10 @@
 import random
-from tinydb import TinyDB, Query
+from tinydb import TinyDB, where
+from tinydb.table import Table
 from movie_wheel.objects import WheelEntry
 
-def find_or_create_user_entry(uuid: int, database: TinyDB):
-    user_search = database.search(Query().uuid == uuid)
+def find_or_create_user_entry(uuid: int, table: Table):
+    user_search = table.search(where('uuid') == uuid)
     if (len(user_search) > 0):
         match = user_search[0]
         entry = WheelEntry(match['uuid'], match['unseen_movies'], match['seen_movies'])
@@ -12,20 +13,22 @@ def find_or_create_user_entry(uuid: int, database: TinyDB):
     else:
         print("No entry found! Creating new entry for UUID {}...".format(uuid))
         new_entry = WheelEntry(uuid)
-        database.insert(new_entry.to_db_entry())
+        table.insert(new_entry.to_db_entry())
         return new_entry
 
-def update_user_entry(entry: WheelEntry, database: TinyDB):
+def update_user_entry(entry: WheelEntry, table: Table):
     print("Updating UUID {}'s entry...".format(entry.uuid))
-    database.update(
-        { 'unseen_movies': entry.unseen_movies, 'seen_movies': entry.seen_movies },
-        Query().uuid == entry.uuid,
+    table.upsert(
+        entry.to_db_entry(),
+        where('uuid') == entry.uuid,
     )
     print("Success! New entry output: {}".format(entry.compressed_desc()))
 
-def get_spin_candidates(entries: list):
-    # Favor non-selected people first
+def get_spin_candidates(table: Table):
+    entries = table.all()
     candidates = []
+
+    # Favor non-selected people first
     for entry in entries:
         if (len(entry['seen_movies']) == 0 and len(entry['unseen_movies']) > 0):
             candidates.append(entry)
@@ -36,6 +39,7 @@ def get_spin_candidates(entries: list):
     for entry in entries:
         if (len(entry['unseen_movies']) == 1):
             candidates.append(entry)
+
     if (len(candidates) != 0):
         return candidates
     
@@ -48,7 +52,8 @@ def select_candidate(candidates: list):
     chosen_entry = WheelEntry(chosen['uuid'], chosen['unseen_movies'], chosen['seen_movies'])
     return chosen_entry
 
-def unwatch_all_entries(entries: list, database: TinyDB):
+def unwatch_all_entries(table: Table):
+    entries = table.all()
     for entry in entries:
         wheel_entry = WheelEntry(entry['uuid'], entry['unseen_movies'], entry['seen_movies'])
         # Ignore entries with no watched movies
@@ -60,13 +65,15 @@ def unwatch_all_entries(entries: list, database: TinyDB):
             wheel_entry.unseen_movies.append(wheel_entry.seen_movies.pop())
         
         # Update entry
-        update_user_entry(wheel_entry, database)
+        update_user_entry(wheel_entry, table)
 
 
-def accumulate_entries(database):
+def accumulate_entries(table: Table):
+    entries = table.all()
+
     output = ""
     have_seen_movies = False
-    for item in database:
+    for item in entries:
         unseen_queue = item['unseen_movies']
         for movie in unseen_queue:
             output += "{}\n".format(movie)

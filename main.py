@@ -84,32 +84,33 @@ async def submit(interaction: discord.Interaction, movie: str = None):
             embed=wheel_embeds.wheel_submit_error_embed("You need to submit a movie name... please do that next time."),
             ephemeral=True
         )
+        return
+    table = wheel_database.table(str(interaction.guild.id))
+    entry = wheel_db.find_or_create_user_entry(interaction.user.id, table)
+
+    # Attempt to add a new movie
+    add_result = entry.add_movie(movie)
+    if (not add_result):
+        await interaction.response.send_message(
+            embed=wheel_embeds.wheel_submit_error_embed("We've already seen both your movies. Wait until next time!"),
+            ephemeral=True
+        )
+        return
+    
+    # Update wheel database and notify the user
+    wheel_db.update_user_entry(entry, table)
+
+    if (type(add_result) is str):
+        # Partial success, we had to drop a movie
+        await interaction.response.send_message(
+            embed=wheel_embeds.wheel_submit_partial_embed("I added the movie *{}* to your list, but to do that I had to remove *{}* from your list.".format(movie, add_result)),
+            ephemeral=True
+        )
     else:
-        entry = wheel_db.find_or_create_user_entry(interaction.user.id, wheel_database)
-
-        # Attempt to add a new movie
-        add_result = entry.add_movie(movie)
-        if (not add_result):
-            await interaction.response.send_message(
-                embed=wheel_embeds.wheel_submit_error_embed("We've already seen both your movies. Wait until next time!"),
-                ephemeral=True
-            )
-            return
-        
-        # Update wheel database and notify the user
-        wheel_db.update_user_entry(entry, wheel_database)
-
-        if (type(add_result) is str):
-            # Partial success, we had to drop a movie
-            await interaction.response.send_message(
-                embed=wheel_embeds.wheel_submit_partial_embed("I added the movie *{}* to your list, but to do that I had to remove *{}* from your list.".format(movie, add_result)),
-                ephemeral=True
-            )
-        else:
-            await interaction.response.send_message(
-                embed=wheel_embeds.wheel_submit_success_embed("I added the movie *{}* to your list.".format(movie)),
-                ephemeral=True
-            )
+        await interaction.response.send_message(
+            embed=wheel_embeds.wheel_submit_success_embed("I added the movie *{}* to your list.".format(movie)),
+            ephemeral=True
+        )
 
 @tree.command(
     name="delete",
@@ -117,8 +118,6 @@ async def submit(interaction: discord.Interaction, movie: str = None):
 )
 @app_commands.describe(number="Either 1 or 2; the slot of the movie to delete. (Use /check to see your submissions!)")
 async def delete(interaction: discord.Interaction, number: int = None):
-    entry = wheel_db.find_or_create_user_entry(interaction.user.id, wheel_database)
-
     # No number input
     if (number is None):
         # VS Code lies, this can be reached if the arg is excluded
@@ -127,7 +126,10 @@ async def delete(interaction: discord.Interaction, number: int = None):
             ephemeral=True
         )
         return
-    
+
+    table = wheel_database.table(str(interaction.guild.id))
+    entry = wheel_db.find_or_create_user_entry(interaction.user.id, table)
+
     # Not a number
     num_as_int = None
     try:
@@ -154,7 +156,7 @@ async def delete(interaction: discord.Interaction, number: int = None):
         return
     
     # Number not founded in reality
-    entry = wheel_db.find_or_create_user_entry(interaction.user.id, wheel_database)
+    entry = wheel_db.find_or_create_user_entry(interaction.user.id, table)
     if (len(entry.unseen_movies) == 0 and len(entry.seen_movies) == 0):
         await interaction.response.send_message(
             embed=wheel_embeds.wheel_delete_error_embed("You haven't even submitted any movies! What do you want me to delete? ...Are you bullying me?"),
@@ -177,7 +179,7 @@ async def delete(interaction: discord.Interaction, number: int = None):
     # We SHOULD be good now but who knows really
     try:
         deleted = entry.delete_movie(num_as_int - 1)
-        wheel_db.update_user_entry(entry, wheel_database)
+        wheel_db.update_user_entry(entry, table)
         await interaction.response.send_message(
             embed=wheel_embeds.wheel_delete_success_embed("I deleted *{}* from your list.".format(deleted)),
             ephemeral=True
@@ -193,7 +195,8 @@ async def delete(interaction: discord.Interaction, number: int = None):
     description="Would you like a reminder?"
 )
 async def check(interaction: discord.Interaction):
-    user_entry = wheel_db.find_or_create_user_entry(interaction.user.id, wheel_database)
+    table = wheel_database.table(str(interaction.guild.id))
+    user_entry = wheel_db.find_or_create_user_entry(interaction.user.id, table)
     await interaction.response.send_message(
         embed=wheel_embeds.wheel_check_embed(user_entry.to_desc()),
         ephemeral=True
@@ -204,7 +207,8 @@ async def check(interaction: discord.Interaction):
     description="I'll show you what's left on the list!"
 )
 async def wheel(interaction: discord.Interaction):
-    all_movies_list = wheel_db.accumulate_entries(wheel_database.all())
+    table = wheel_database.table(str(interaction.guild.id))
+    all_movies_list = wheel_db.accumulate_entries(table)
     await interaction.response.send_message(embed=wheel_embeds.wheel_wheel_embed(all_movies_list))
 
 @tree.command(
@@ -212,7 +216,8 @@ async def wheel(interaction: discord.Interaction):
     description="Leave it up to luck!"
 )
 async def spin(interaction: discord.Interaction):
-    candidates = wheel_db.get_spin_candidates(wheel_database.all())
+    table = wheel_database.table(str(interaction.guild.id))
+    candidates = wheel_db.get_spin_candidates(table)
 
     # Check if we just got an empty list
     if (len(candidates) == 0):
@@ -223,7 +228,7 @@ async def spin(interaction: discord.Interaction):
     
     chosen_entry = wheel_db.select_candidate(candidates)
     movie_to_watch = chosen_entry.watch_movie()
-    wheel_db.update_user_entry(chosen_entry, wheel_database)
+    wheel_db.update_user_entry(chosen_entry, table)
 
     await interaction.response.send_message(embed=wheel_embeds.wheel_spin_success_embed(movie_to_watch))
 
@@ -350,11 +355,15 @@ async def unspin(interaction: discord.Interaction):
     # Check sender permissions
     is_admin = interaction.user.guild_permissions.administrator
     if (not is_admin):
-        await interaction.response.send_message(embed=wheel_embeds.wheel_unspin_error_embed("You need the Administrator permission on this server to do that."), ephemeral=True)
+        await interaction.response.send_message(
+            embed=wheel_embeds.wheel_unspin_error_embed("You need the Administrator permission on this server to do that."),
+            ephemeral=True
+        )
         return
-    else:
-        wheel_db.unwatch_all_entries(wheel_database.all(), wheel_database)
-        await interaction.response.send_message(embed=wheel_embeds.wheel_unspin_success_embed)
+
+    table = wheel_database.table(str(interaction.guild.id))
+    wheel_db.unwatch_all_entries(table)
+    await interaction.response.send_message(embed=wheel_embeds.wheel_unspin_success_embed)
 
 @tree.command(
     name="reset",
@@ -366,9 +375,10 @@ async def reset(interaction: discord.Interaction):
     if (not is_josh):
         await interaction.response.send_message(file=discord.File(fp='media/no.mp4'))
         return
-    else:
-        wheel_database.truncate()
-        await interaction.response.send_message(embed=wheel_embeds.wheel_reset_success_embed)
+
+    table = wheel_database.table(str(interaction.guild.id))
+    table.truncate()
+    await interaction.response.send_message(embed=wheel_embeds.wheel_reset_success_embed)
 
 @tree.command(
     name="tally",

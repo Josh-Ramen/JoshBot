@@ -389,4 +389,3 @@ async def tally(interaction: discord.Interaction):
 with open('secret.txt', 'r') as file:
     secret = file.read().rstrip()
     client.run(secret)
-    print("JoshBot ")

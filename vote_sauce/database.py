@@ -1,5 +1,5 @@
 from collections import defaultdict
-from tinydb import Query, where
+from tinydb import where
 from tinydb.table import Table
 
 from vote_sauce.objects import SauceVote, BankAccount
@@ -20,7 +20,7 @@ def find_vote(voter_uuid: int, table: Table):
 def send_vote(vote: SauceVote, table: Table):
     print("Vote is {}".format(vote.compressed_desc()))
     table.upsert(
-        { 'voter_uuid': vote.voter_uuid, 'vote_uuid': vote.vote_uuid, 'old_vote_uuid': vote.old_vote_uuid },
+        vote.to_db_entry(),
         where('voter_uuid') == vote.voter_uuid
     )
     print("Successfully updated vote for {}".format(vote.vote_uuid))
@@ -58,7 +58,7 @@ def audit_votes(table: Table):
     return votes
 
 def get_bank_account(uuid: int, table: Table):
-    search_res = table.search(Query().uuid == uuid)
+    search_res = table.search(where('uuid') == uuid)
     if (len(search_res) > 0):
         # User found, return existing bank account
         match = search_res[0]
@@ -73,8 +73,8 @@ def get_bank_account(uuid: int, table: Table):
 
 def update_bank_account(account: BankAccount, table: Table):
     table.update(
-        { 'balance': account.balance },
-        Query().uuid == account.uuid
+        account.to_db_entry(),
+        where('uuid') == account.uuid
     )
     print("Successfully updated vote for {}".format(account.uuid))
 

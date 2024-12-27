@@ -19,11 +19,6 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
-# Server ID consts
-test_server_id = 844722312959754300
-real_server_id = 452540746139172866
-full_server_list = [discord.Object(id=test_server_id), discord.Object(id=real_server_id)]
-
 # My consts
 my_user_id = 321039002268467200
 
@@ -254,9 +249,10 @@ async def explainvote(interaction: discord.Interaction):
 )
 @app_commands.describe(user="The @ of the user you want to vote for.")
 async def vote(interaction: discord.Interaction, user: discord.Member):
-    existing_vote = vote_db.find_vote(interaction.user.id, vote_database)
+    table = vote_database.table(str(interaction.guild.id))
 
-    update_result = vote_db.update_vote(existing_vote, user.id)
+    existing_vote = vote_db.find_vote(interaction.user.id, table)
+    update_result = existing_vote.change_vote(user.id)
     if (update_result <= 0):
         # Vote didn't change
         vote_user = interaction.guild.get_member(user.id)
@@ -267,7 +263,7 @@ async def vote(interaction: discord.Interaction, user: discord.Member):
         return
     
     # Vote was successfully changed
-    vote_db.send_vote(existing_vote, vote_database)
+    vote_db.send_vote(existing_vote, table)
     
     vote_desc = vote_functions.get_vote_desc(existing_vote, user, interaction)
     await interaction.response.send_message(
@@ -276,25 +272,30 @@ async def vote(interaction: discord.Interaction, user: discord.Member):
 
 @tasks.loop(time=datetime.time(hour=5, minute=0, second=0))
 async def tally_job():
-    guild = client.get_guild(real_server_id)
-    message_dest = guild.system_channel
-    winners = vote_db.tally_votes(vote_database)
-    if (len(winners) < 1):
-        await message_dest.send(embed=vote_embeds.tally_no_votes_embed())
-        return
+    for guild in client.guilds:
+        message_dest = guild.system_channel
+        vote_table = vote_database.table(str(guild.id))
+        bank_table = bank_database.table(str(guild.id))
 
-    vote_db.purge_votes(vote_database)
-    vote_db.reward_winners(winners, bank_database)
-    await message_dest.send(
-        embed=vote_embeds.tally_success_embed(vote_functions.get_winner_title(list(winners), guild))
-    )
+        winners = vote_db.tally_votes(vote_table)
+        if (len(winners) < 1):
+            await message_dest.send(embed=vote_embeds.tally_no_votes_embed())
+            return
+
+        vote_db.purge_votes(vote_table)
+        vote_db.reward_winners(winners, bank_table)
+        await message_dest.send(
+            embed=vote_embeds.tally_success_embed(vote_functions.get_winner_title(list(winners), guild))
+        )
 
 @tree.command(
     name="audit",
     description="Check how many votes everyone has right now."
 )
 async def audit(interaction: discord.Interaction):
-    candidates = vote_db.audit_votes(vote_database)
+    table = vote_database.table(str(interaction.guild.id))
+    
+    candidates = vote_db.audit_votes(table)
     if (len(candidates) < 1):
         await interaction.response.send_message(embed=vote_embeds.audit_no_votes_embed(), ephemeral=True)
         return
@@ -307,7 +308,8 @@ async def audit(interaction: discord.Interaction):
     description="Check how many Sauce Coins you've earned."
 )
 async def balance(interaction: discord.Interaction):
-    balance = vote_db.get_balance(interaction.user.id, bank_database)
+    table = vote_database.table(str(interaction.guild.id))
+    balance = vote_db.get_balance(interaction.user.id, table)
     await interaction.response.send_message(embed=vote_embeds.balance_success_embed(balance))
 
 @tree.command(
@@ -315,7 +317,8 @@ async def balance(interaction: discord.Interaction):
     description="See who's earned the most coins!"
 )
 async def leaderboard(interaction: discord.Interaction):
-    leaderboard = vote_db.get_leaderboard(bank_database)
+    table = bank_database.table(str(interaction.guild.id))
+    leaderboard = vote_db.get_leaderboard(table)
     if (len(leaderboard) == 0):
         await interaction.response.send_message(embed=vote_embeds.leaderboard_empty_embed())
         return

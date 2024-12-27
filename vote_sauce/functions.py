@@ -1,6 +1,7 @@
 import discord
 
 from common.constants import bot_user_id
+from common.functions import pluralizer
 from vote_sauce.objects import SauceVote
 
 def get_vote_desc(vote: SauceVote, new_vote: discord.Member, interaction: discord.Interaction):
@@ -40,11 +41,6 @@ def get_winner_title(winners: list[int], guild: discord.Guild):
     text += "won the most votes!"
     return text
 
-def pluralizer(num: int):
-    if (num != 1):
-        return "s"
-    return ""
-
 def get_audit_desc(candidates: dict[int, int], guild: discord.Guild):
     text = ""
 
@@ -70,6 +66,9 @@ def get_leaderboard_desc(leaderboard: list[tuple[int, int]], guild: discord.Guil
     text = ""
     for i in range(len(leaderboard)):
         tuple = leaderboard[i]
+        if (tuple[1] < 1):
+            continue
+
         text += get_ranking(i)
         text += "**{}** with :coin: **{} Sauce Coins**".format(guild.get_member(tuple[0]).display_name, tuple[1])
 

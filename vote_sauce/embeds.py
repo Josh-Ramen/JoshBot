@@ -1,7 +1,7 @@
 from discord import Embed, Colour
 
 from common.embeds import _josh_bot_color
-from vote_sauce.functions import pluralizer
+from common.functions import pluralizer
 
 # Descriptions
 

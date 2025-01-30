@@ -313,7 +313,7 @@ async def audit(interaction: discord.Interaction):
     description="Check how many Sauce Coins you've earned."
 )
 async def balance(interaction: discord.Interaction):
-    table = vote_database.table(str(interaction.guild.id))
+    table = bank_database.table(str(interaction.guild.id))
     balance = vote_db.get_balance(interaction.user.id, table)
     await interaction.response.send_message(embed=vote_embeds.balance_success_embed(balance))
 

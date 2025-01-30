@@ -76,7 +76,7 @@ def update_bank_account(account: BankAccount, table: Table):
         account.to_db_entry(),
         where('uuid') == account.uuid
     )
-    print("Successfully updated vote for {}".format(account.uuid))
+    print("Successfully updated bank account for {}".format(account.uuid))
 
 def give_coin(uuid: int, table: Table):
     account = get_bank_account(uuid, table)

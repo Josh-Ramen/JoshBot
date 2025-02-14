@@ -3,6 +3,7 @@ import discord
 from discord import app_commands
 from discord.ext import tasks
 import os.path
+import random
 from tinydb import TinyDB
 
 import common.embeds as common_embeds
@@ -272,6 +273,36 @@ async def vote(interaction: discord.Interaction, user: discord.Member):
     
     vote_desc = vote_functions.get_vote_desc(existing_vote, user, interaction)
     await interaction.response.send_message(
+            embed=vote_embeds.vote_success_embed(vote_desc)
+        )
+
+@tree.command(
+    name="voterandom",
+    description="Gamble with your vote!"
+)
+async def voterandom(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True)
+    
+    table = vote_database.table(str(interaction.guild.id))
+
+    # Get a random user from the current server
+    user = random.choice(interaction.guild.members)
+
+    existing_vote = vote_db.find_vote(interaction.user.id, table)
+    update_result = existing_vote.change_vote(user.id)
+    if (update_result <= 0):
+        # Vote didn't change
+        vote_user = interaction.guild.get_member(user.id)
+        await interaction.followup.send(
+            embed=vote_embeds.vote_error_embed("You randomly selected {} again, so nothing happened.".format(vote_user.mention)),
+        )
+        return
+    
+    # Vote was successfully changed
+    vote_db.send_vote(existing_vote, table)
+    
+    vote_desc = vote_functions.get_vote_desc(existing_vote, user, interaction)
+    await interaction.followup.send(
             embed=vote_embeds.vote_success_embed(vote_desc)
         )
 

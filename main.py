@@ -5,6 +5,7 @@ from discord.ext import tasks
 import os.path
 import random
 from tinydb import TinyDB
+from zoneinfo import ZoneInfo
 
 import common.embeds as common_embeds
 import movie_wheel.database as wheel_db
@@ -306,7 +307,7 @@ async def voterandom(interaction: discord.Interaction):
             embed=vote_embeds.vote_success_embed(vote_desc)
         )
 
-@tasks.loop(time=datetime.time(hour=5, minute=0, second=0))
+@tasks.loop(time=datetime.time(hour=0, minute=0, second=0, tzinfo=ZoneInfo("America/New_York")))
 async def tally_job():
     for guild in client.guilds:
         message_dest = guild.system_channel

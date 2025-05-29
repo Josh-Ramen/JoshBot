@@ -345,23 +345,27 @@ async def audit(interaction: discord.Interaction):
     description="Check how many Sauce Coins you've earned."
 )
 async def balance(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True)
+
     table = bank_database.table(str(interaction.guild.id))
     balance = vote_db.get_balance(interaction.user.id, table)
-    await interaction.response.send_message(embed=vote_embeds.balance_success_embed(balance))
+    await interaction.followup.send(embed=vote_embeds.balance_success_embed(balance))
 
 @tree.command(
     name="leaderboard",
     description="See who's earned the most coins!"
 )
 async def leaderboard(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True)\
+    
     table = bank_database.table(str(interaction.guild.id))
     leaderboard = vote_db.get_leaderboard(table)
     if (len(leaderboard) == 0):
-        await interaction.response.send_message(embed=vote_embeds.leaderboard_empty_embed())
+        await interaction.followup.send(embed=vote_embeds.leaderboard_empty_embed())
         return
     
     message = vote_functions.get_leaderboard_desc(leaderboard, interaction.guild)
-    await interaction.response.send_message(embed=vote_embeds.leaderboard_success_embed(message))
+    await interaction.followup.send(embed=vote_embeds.leaderboard_success_embed(message))
 
 # Joke commands
 

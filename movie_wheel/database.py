@@ -1,5 +1,5 @@
 import random
-from tinydb import TinyDB, where
+from tinydb import where
 from tinydb.table import Table
 from movie_wheel.objects import WheelEntry
 

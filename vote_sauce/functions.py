@@ -62,15 +62,39 @@ def get_ranking(i: int):
     
     return "{}. ".format(i + 1)
 
-def get_leaderboard_desc(leaderboard: list[tuple[int, int]], guild: discord.Guild):
-    text = ""
+def sanitize_leaderboard(leaderboard: list[tuple[int, int]], guild: discord.Guild):
+    # Aim: fetch usernames, discard users who are no longer in guild
+    sanitized_leaderboard = []
     for i in range(len(leaderboard)):
         tuple = leaderboard[i]
+
+        # Mercifully* exclude users without any money
+        # *for my own convenience
         if (tuple[1] < 1):
             continue
+        
+        username = None
+        try:
+            # Base case for user who still exists
+            username = guild.get_member(tuple[0]).display_name
+            sanitized_leaderboard.append((username, tuple[1]))
+        except:
+            # Username couldn't be found, discard this user
+            continue
+    
+    # Returns a list of tuples of [username (str), balance (int)]
+    return sanitized_leaderboard
+
+
+def get_leaderboard_desc(leaderboard: list[tuple[int, int]], guild: discord.Guild):
+    text = ""
+
+    clean_board = sanitize_leaderboard(leaderboard, guild)
+    for i in range(len(clean_board)):
+        tuple = clean_board[i]
 
         text += get_ranking(i)
-        text += "**{}** with :coin: **{} Sauce Coins**".format(guild.get_member(tuple[0]).display_name, tuple[1])
+        text += "**{}** with :coin: **{} Sauce Coins**".format(tuple[0], tuple[1])
 
         if (i != len(leaderboard) - 1):
             text += "\n"

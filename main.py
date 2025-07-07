@@ -316,7 +316,8 @@ async def tally_job():
 
         winners = vote_db.tally_votes(vote_table)
         if (len(winners) < 1):
-            await message_dest.send(embed=vote_embeds.tally_no_votes_embed())
+            ### This message got annoying, so I'm turning it off but leaving it as a comment in case I change my mind.
+            # await message_dest.send(embed=vote_embeds.tally_no_votes_embed())
             return
 
         vote_db.purge_votes(vote_table)

@@ -375,7 +375,7 @@ async def leaderboard(interaction: discord.Interaction):
     description="By popular demand!"
 )
 async def something_cool(interaction: discord.Interaction):
-    interaction.response.defer()
+    await interaction.response.defer(thinking=True)
     extension = 'gif' if (interaction.user.id == my_user_id) else 'png'
     fp = f'media/something_cool/{interaction.user.id}.{extension}'
     if os.path.isfile(fp):
